@@ -1,0 +1,5 @@
+- nohup으로 flask 백그라운드 실행
+nohup python3 -u app.py &
+
+- nohup.out 내용 지우기
+cat /dev/null > nohup.out
