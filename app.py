@@ -1,10 +1,10 @@
 from flask import Flask, request, render_template
 import queue
 from datetime import datetime
+import ssl
 
 app = Flask(__name__)
 requests = queue.Queue(maxsize=10)
-
 
 @app.route('/')
 def index():
@@ -35,5 +35,5 @@ def requestbin():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
-
+#    app.run(host='0.0.0.0', port=5000, ssl_context=('../ssl/server.crt', '../ssl/server.key'), debug=False)
+    app.run(host='0.0.0.0', port=5000, ssl_context='adhoc')
