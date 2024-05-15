@@ -1,26 +1,31 @@
+from flask import Flask, Response
 import cv2
 
-# 카메라 모듈 초기화
-cap = cv2.VideoCapture(0)  # 0은 내장 카메라를 의미합니다. 만약 외부 카메라를 사용하려면 인덱스를 바꿔주세요.
+app = Flask(__name__)
+camera = cv2.VideoCapture(0)  # 카메라 인덱스를 변경하여 원하는 카메라를 선택할 수 있습니다.
 
-# 송출할 윈도우 생성
-cv2.namedWindow("Live Video", cv2.WINDOW_NORMAL)
 
-while True:
-    # 비디오에서 프레임 읽기
-    ret, frame = cap.read()
+def generate_frames():
+    while True:
+        success, frame = camera.read()
+        if not success:
+            break
+        else:
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-    # 프레임이 제대로 읽혔는지 확인
-    if not ret:
-        break
 
-    # 프레임을 화면에 표시
-    cv2.imshow("Live Video", frame)
+@app.route('/')
+def index():
+    return "라이브 스트리밍 서버가 실행 중입니다."
 
-    # 'q' 키를 누르면 종료
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
 
-# 종료 작업
-cap.release()
-cv2.destroyAllWindows()
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', debug=True)
